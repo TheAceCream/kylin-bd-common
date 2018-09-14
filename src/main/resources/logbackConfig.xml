@@ -1,0 +1,15 @@
+<included>
+    <property name="baseLogFilePath" value="./logs" />
+
+    <!-- appender config -->
+    <property name="cacheAppender" value="cacheAppender" />
+    <property name="qifuAppenderName" value="fileAsyncInfoAppender" />
+    <property name="qifuErrAppenderName" value="fileAsyncErrAppender" />
+
+    <!-- log level config -->
+    <property name="qifuLevel" value="INFO" />
+    <property name="mybatisLevel" value="INFO" />
+    <property name="frameworkLevel" value="INFO" />
+    <property name="javaSql" value="INFO" />
+    <property name="defaultLevel" value="INFO" />
+</included>
