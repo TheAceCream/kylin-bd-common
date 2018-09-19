@@ -3,6 +3,7 @@ package com.qf58.bd.kylin.template;
 import com.qf58.bd.kylin.connect.KylinHelper;
 import com.qf58.bd.kylin.dto.QueryFiled;
 import com.qf58.bd.kylin.dto.SelectField;
+import com.qf58.bd.kylin.dto.TimeField;
 import com.qf58.bd.kylin.entities.KylinQueryBaseResult;
 import com.qf58.bd.kylin.enums.QueryTimeTypeEnum;
 
@@ -13,14 +14,53 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-/**
- * Created with IntelliJ IDEA.
- * Description:
- * User: weicaijia
- * Date: 2018/9/17 16:36
- * Time: 14:15
- */
 public class KylinBuildCubeTemplate {
+
+    /**
+     * 查询数据统计
+     * @param selectFields 待查询的度量以及想获取的名称 (可为空)
+     * @param queryFields 额外的查询条件,可以填写成维度 (可为空)
+     * @param timeField 时间相关 (必填)
+     * timeColumn 时间列名(必填)
+     * startTime 查询开始时间 (可为空)
+     * endTime 查询结束时间 (可为空)
+     * @return
+     */
+    public static String queryCountBuild(List<SelectField> selectFields,List<QueryFiled> queryFields,String tableName,TimeField timeField){
+        if (timeField==null){
+            return null;
+        }
+        String timeColumn = timeField.getTimeColumn();
+        if (timeColumn==null){
+            return null;
+        }
+        String startTime = timeField.getStartTime();
+        String endTime = timeField.getEndTime();
+
+        StringBuffer sb = new StringBuffer();
+        String sqlStage1 = "select count(1) as static_num ";
+        sb.append(sqlStage1);
+        if (selectFields!=null){
+            if (selectFields.size()!=0){
+                for (SelectField selectField : selectFields) {
+                    sb.append(","+selectField.getColumn()+" as "+selectField.getName());
+                }
+            }
+        }
+        String sqlStage2 = "from " + tableName + " where 1=1 ";
+        sb.append(sqlStage2);
+        //如果不设置开始和结束时间 则查所有
+        if (startTime != null && !"".equals(startTime)){
+            sb.append("and " + tableName + "." + timeColumn + " >= '"+startTime+"' ");
+        }
+        if (endTime != null && !"".equals(endTime)){
+            sb.append("and " + tableName + "."+ timeColumn + " < '"+endTime+"' ");
+        }
+        //添加筛选条件
+        String sqlStage4 = fillQueryCondition(queryFields);
+        sb.append(sqlStage4);
+        return sb.toString();
+    }
 
 
     /**
@@ -28,11 +68,11 @@ public class KylinBuildCubeTemplate {
      * @param selectFields 待查询的度量以及想获取的名称 (可为空)
      * @param queryFields 额外的查询条件,可以填写成维度 (可为空)
      * @param sequence 是否正序 (可为空)
-     * @param tableName 表名 (必填)
-     * @param timeField 表内时间列名 (必填)
-     * @param startTime 查询开始时间 (可为空)
-     * @param endTime 查询结束时间 (可为空)
-     * @param queryTimeTypeEnum 整合类型(日、月、年)
+     * @param timeField 时间相关 (必填)
+     *  timeColumn 时间列名 (必填)
+     *  startTime 查询开始时间 (可为空)
+     *  endTime 查询结束时间 (可为空)
+     *  queryTimeTypeEnum 整合类型(日、月、年)
      * @return
      *
      * 默认按时间正序排列
@@ -40,21 +80,30 @@ public class KylinBuildCubeTemplate {
      * 默认整合类型为 日期
      *
      */
-    public static String queryStrBulid(List<SelectField> selectFields, List<QueryFiled> queryFields, Boolean sequence, String tableName, String timeField, String startTime, String endTime, QueryTimeTypeEnum queryTimeTypeEnum){
+    public static String queryStrBuild(List<SelectField> selectFields, List<QueryFiled> queryFields, Boolean sequence, String tableName, TimeField timeField){
         if (sequence == null){
             sequence = true;
         }
         if (tableName==null || tableName==""){
             return null;
         }
-        if (timeField==null || timeField==""){
+        if (timeField==null){
             return null;
         }
-        if (queryTimeTypeEnum==null){
-            queryTimeTypeEnum = QueryTimeTypeEnum.DAY_TYPE;
+        if (timeField.getQueryTimeTypeEnum()==null){
+            timeField.setQueryTimeTypeEnum(QueryTimeTypeEnum.DAY_TYPE);
         }
+
+        String timeColumn = timeField.getTimeColumn();
+        if (timeColumn==null){
+            return null;
+        }
+        String startTime = timeField.getStartTime();
+        String endTime = timeField.getEndTime();
+        QueryTimeTypeEnum queryTimeTypeEnum = timeField.getQueryTimeTypeEnum();
+
         StringBuffer sb = new StringBuffer();
-        String sqlStage1 = "select substring("+ tableName +"."+timeField+",1,"+ queryTimeTypeEnum.getDesc() +") as static_time,count(1) as static_num ";
+        String sqlStage1 = "select substring("+ tableName +"."+ timeColumn +",1,"+ queryTimeTypeEnum.getDesc() +") as static_time,count(1) as static_num ";
         sb.append(sqlStage1);
         if (selectFields!=null){
             if (selectFields.size()!=0){
@@ -67,31 +116,31 @@ public class KylinBuildCubeTemplate {
         sb.append(sqlStage2);
         //时间空处理
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        if (startTime==null||startTime==""){
-            startTime = sdf.format(new Date());
-        }
-        if (endTime==null||endTime==""){
+        if (startTime==null|| "".equals(startTime)){
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(new Date());
             calendar.add(Calendar.YEAR,-1);
-            endTime = sdf.format(calendar.getTime());
+            startTime = sdf.format(calendar.getTime());
+        }
+        if (endTime==null || "".equals(endTime)){
+            endTime = sdf.format(new Date());
         }
         //时间切割处理
-        if (queryTimeTypeEnum==QueryTimeTypeEnum.MONTH_TYPE){
+        if (queryTimeTypeEnum == QueryTimeTypeEnum.MONTH_TYPE){
             startTime = startTime.substring(0,7);
             endTime = endTime.substring(0,7);
-        }else if (queryTimeTypeEnum==QueryTimeTypeEnum.YEAR_TYPE){
+        }else if (timeField.getQueryTimeTypeEnum()==QueryTimeTypeEnum.YEAR_TYPE){
             startTime = startTime.substring(0,4);
             endTime = endTime.substring(0,4);
         }
-        String sqlStage3 = " where substring("+tableName+"."+timeField + ",1,"+ queryTimeTypeEnum.getDesc() +") between '"+ startTime+"' and '"+ endTime+"'";
+        String sqlStage3 = " where substring("+tableName+"."+ timeColumn + ",1,"+ queryTimeTypeEnum.getDesc() +") between '"+ startTime +"' and '"+ endTime +"'";
         sb.append(sqlStage3);
 
         //添加筛选条件
         String sqlStage4 = fillQueryCondition(queryFields);
         sb.append(sqlStage4);
 
-        String sqlStage5 = " group by substring("+ tableName +"."+timeField+",1,"+ queryTimeTypeEnum.getDesc() +") order by substring("+ tableName +"."+timeField+",1,"+ queryTimeTypeEnum.getDesc() +")";
+        String sqlStage5 = " group by substring("+ tableName +"."+ timeColumn +",1,"+  queryTimeTypeEnum.getDesc() +") order by substring("+ tableName +"."+ timeColumn +",1,"+ queryTimeTypeEnum.getDesc() +")";
         sb.append(sqlStage5);
         if (sequence){
             sb.append(" desc");
@@ -118,11 +167,14 @@ public class KylinBuildCubeTemplate {
 
 
     /**
+     * 返回的是时间加上时间对应的度量
      * @param sql 查询sql语句
      * @return 成功返回ResultSet
      */
-    public static List<KylinQueryBaseResult> queryKylinSQL(Connection conn, PreparedStatement ps, ResultSet rs, String sql) {
+    public static List<KylinQueryBaseResult> queryKylinGroupSQL(Connection conn, String sql) {
         List<KylinQueryBaseResult> list = new ArrayList<>();
+        PreparedStatement ps = null;
+        ResultSet rs = null;
         try {
             ps = conn.prepareStatement(sql);
             rs = ps.executeQuery();
@@ -137,18 +189,7 @@ public class KylinBuildCubeTemplate {
                 String result;
                 result = sql.split("from")[0];
                 result = result.substring(81,result.length());
-                if (result!=null && !"".equals(result)){
-                    String[] strings = result.split(",");
-                    for (String temp : strings) {
-                        String nameTemp = temp.split("as")[1].trim();
-                        String valueTemp = rs.getString(nameTemp);
-                        Map<String,String> map = new HashMap<>();
-                        map.put("name",nameTemp);
-                        map.put("value",valueTemp);
-                        columnsList.add(map);
-                    }
-                }
-
+                columnsList = fillMapList(result,rs);
                 kylinQueryBaseResult.setConditionList(columnsList);
                 list.add(kylinQueryBaseResult);
             }
@@ -162,46 +203,54 @@ public class KylinBuildCubeTemplate {
         return list;
     }
 
-
-
-
-    public static void main(String[] args) {
-
-
-        SelectField selectField = new SelectField();
-        selectField.setColumn("count(1)");
-        selectField.setName("name1");
-
-        SelectField selectField2 = new SelectField();
-        selectField2.setColumn("count(1)");
-        selectField2.setName("name2");
-
-        List selectList = new ArrayList();
-        selectList.add(selectField);
-        selectList.add(selectField2);
-
-
-
-        QueryFiled queryFiled1 = new QueryFiled();
-        queryFiled1.setColumn("source_terminal");
-        queryFiled1.setValue(3);
-
-        QueryFiled queryFiled2 = new QueryFiled();
-        queryFiled2.setColumn("submit_type");
-        queryFiled2.setValue(1);
-
-        List list = new ArrayList();
-        list.add(queryFiled1);
-        list.add(queryFiled2);
-
-
-        String s1 = queryStrBulid(selectList,list,true,"t_clue","create_time","2018-01-01","2018-02-01",QueryTimeTypeEnum.DAY_TYPE);
-
-
-
-
-        System.out.println(s1);
-
+    public static List<Map<String,String>> queryKylinSimpleSQL(Connection conn, String sql){
+        List<Map<String,String>> columnsList = new ArrayList<>();
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                String result;
+                result = sql.split("from")[0];
+                result = result.substring(7, result.length());
+                columnsList = fillMapList(result, rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            KylinHelper.close(conn,ps,rs);
+        }
+        return columnsList;
     }
 
+    /**
+     * 填充一下List<Map>结构
+     * @param result
+     * @param rs
+     * @return
+     * @throws SQLException
+     */
+    private static List fillMapList(String result,ResultSet rs) throws SQLException {
+        List<Map<String,String>> list = new ArrayList<>();
+        if (result!=null && !"".equals(result)){
+            String[] strings = result.split(",");
+            for (String temp : strings) {
+                String nameTemp = temp.split("as")[1].trim();
+                String valueTemp = rs.getString(nameTemp);
+                Map<String,String> map = new HashMap<>();
+                map.put("name",nameTemp);
+                map.put("value",valueTemp);
+                list.add(map);
+            }
+        }
+        return list;
+    }
+
+
+
+
+
 }
+
+
