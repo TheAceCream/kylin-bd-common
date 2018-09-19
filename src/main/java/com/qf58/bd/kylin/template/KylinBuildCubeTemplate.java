@@ -133,22 +133,23 @@ public class KylinBuildCubeTemplate {
                 kylinQueryBaseResult.setStaticTime(staticTime);
                 kylinQueryBaseResult.setStaticNum(staticNum);
 
-                //TODO:待写 其他的带着别名的列
                 List<Map<String,String>> columnsList = new ArrayList<>();
                 String result;
                 result = sql.split("from")[0];
                 result = result.substring(81,result.length());
-                String[] strings = result.split(",");
-                for (String temp : strings) {
-                    String nameTemp = temp.split("as")[1].trim();
-                    String valueTemp = rs.getString(nameTemp);
-                    Map<String,String> map = new HashMap<>();
-                    map.put("name",nameTemp);
-                    map.put("value",valueTemp);
-                    columnsList.add(map);
+                if (result!=null && !"".equals(result)){
+                    String[] strings = result.split(",");
+                    for (String temp : strings) {
+                        String nameTemp = temp.split("as")[1].trim();
+                        String valueTemp = rs.getString(nameTemp);
+                        Map<String,String> map = new HashMap<>();
+                        map.put("name",nameTemp);
+                        map.put("value",valueTemp);
+                        columnsList.add(map);
+                    }
                 }
-                kylinQueryBaseResult.setConditionList(columnsList);
 
+                kylinQueryBaseResult.setConditionList(columnsList);
                 list.add(kylinQueryBaseResult);
             }
 
