@@ -1,98 +1,86 @@
 package com.qf58.bd.kylin.connect;
 
-import javax.sql.DataSource;
-import java.io.PrintWriter;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+
+import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
-import java.util.LinkedList;
-import java.util.logging.Logger;
 
 /**
  * Created with IntelliJ IDEA.
- *
- * Description:kylin连接池
- *
+ * Description:
  * User: weicaijia
- * Date: 2018/9/14 17:46
+ * Date: 2018/9/18 17:34
  * Time: 14:15
  */
-public class KylinConnPool implements DataSource {
+public class KylinConnPool {
 
-    //1.创建1个容器用于存储Connection对象
-    private static LinkedList<Connection> pool = new LinkedList<Connection>();
+    private static String driverName;
+    private static String url;
+    private static String user;
+    private static String password;
 
-    //2.创建5个连接放到容器中去
-    static{
-        for (int i = 0; i < 5; i++) {
-            Connection conn = KylinConnection.getConnection();
-            ConnectionHelper connectionHelper = new ConnectionHelper(conn,pool);
-            pool.add(connectionHelper);
-        }
+
+    public KylinConnPool(String driverName, String url, String user, String password) {
+        this.driverName = driverName;
+        this.url = url;
+        this.user = user;
+        this.password = password;
     }
 
-    @Override
-    public Connection getConnection() throws SQLException {
-        Connection conn = null;
-        //先判断
-        if(pool.size()==0){
-            //没有就再创建一些
-            for (int i = 0; i < 5; i++) {
-                conn = KylinConnection.getConnection();
-                ConnectionHelper connectionHelper = new ConnectionHelper(conn,pool);
-                pool.add(connectionHelper);
+
+    private static final KylinConnPool instance = new KylinConnPool(driverName,url,user,password);
+
+    private static ComboPooledDataSource comboPooledDataSource;
+
+//    static {
+//        try {
+//            try {
+//                Class.forName(driverName);
+//            } catch (ClassNotFoundException e) {
+//                e.printStackTrace();
+//            }
+//            comboPooledDataSource = new ComboPooledDataSource();
+//            comboPooledDataSource.setDriverClass(driverName);
+//            comboPooledDataSource.setJdbcUrl(url);
+//            comboPooledDataSource.setUser(user);
+//            comboPooledDataSource.setPassword(password);
+//            // 下面是设置连接池的一配置
+//            comboPooledDataSource.setMaxPoolSize(20);
+//            comboPooledDataSource.setMinPoolSize(5);
+//        } catch (PropertyVetoException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+    public synchronized Connection getConnection() throws PropertyVetoException {
+        Connection connection = null;
+        try {
+            try {
+                Class.forName(driverName);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
             }
+            comboPooledDataSource = new ComboPooledDataSource();
+            comboPooledDataSource.setDriverClass(driverName);
+            comboPooledDataSource.setJdbcUrl(url);
+            comboPooledDataSource.setUser(user);
+            comboPooledDataSource.setPassword(password);
+            // 下面是设置连接池的一配置
+            comboPooledDataSource.setMaxPoolSize(20);
+            comboPooledDataSource.setMinPoolSize(5);
+            connection = comboPooledDataSource.getConnection();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        //从池子里面获取一个连接对象Connection
-        conn = pool.remove(0);
-        return conn;
+
+        return connection;
     }
 
-    /**
-     * 归还连接对象到连接池中去
-     */
-    public void backConnection(Connection conn){
-        pool.add(conn);
+    public static KylinConnPool getInstance() {
+        return instance;
     }
 
 
-    @Override
-    public Connection getConnection(String username, String password) throws SQLException {
-        return null;
-    }
 
-    @Override
-    public <T> T unwrap(Class<T> iface) throws SQLException {
-        return null;
-    }
-
-    @Override
-    public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return false;
-    }
-
-    @Override
-    public PrintWriter getLogWriter() throws SQLException {
-        return null;
-    }
-
-    @Override
-    public void setLogWriter(PrintWriter out) throws SQLException {
-
-    }
-
-    @Override
-    public void setLoginTimeout(int seconds) throws SQLException {
-
-    }
-
-    @Override
-    public int getLoginTimeout() throws SQLException {
-        return 0;
-    }
-
-    @Override
-    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-        return null;
-    }
 }
