@@ -1,8 +1,8 @@
-package com.qf58.bd.kylin.utils;
+package com.tong.bd.kylin.utils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.qf58.bd.kylin.entities.cubes.*;
+import com.tong.bd.kylin.entities.cubes.*;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

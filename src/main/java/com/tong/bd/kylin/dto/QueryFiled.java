@@ -1,4 +1,4 @@
-package com.qf58.bd.kylin.dto;
+package com.tong.bd.kylin.dto;
 
 import java.io.Serializable;
 

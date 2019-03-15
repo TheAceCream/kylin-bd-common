@@ -1,4 +1,4 @@
-package com.qf58.bd.kylin.exception;
+package com.tong.bd.kylin.exception;
 
 /**
  * Created with IntelliJ IDEA.

@@ -1,4 +1,4 @@
-package com.qf58.bd.kylin.entities.cubes;
+package com.tong.bd.kylin.entities.cubes;
 
 import java.io.Serializable;
 import java.util.Map;

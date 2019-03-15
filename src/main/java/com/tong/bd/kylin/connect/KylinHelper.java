@@ -1,4 +1,4 @@
-package com.qf58.bd.kylin.connect;
+package com.tong.bd.kylin.connect;
 
 import org.apache.commons.lang3.StringUtils;
 

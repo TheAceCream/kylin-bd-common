@@ -1,4 +1,4 @@
-package com.qf58.bd.kylin.enums;
+package com.tong.bd.kylin.enums;
 
 /**
  * Created with IntelliJ IDEA.

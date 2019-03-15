@@ -1,13 +1,13 @@
-package com.qf58.bd.kylin.test;
+package com.tong.bd.kylin.test;
 
-import com.qf58.bd.kylin.connect.KylinConnPool;
-import com.qf58.bd.kylin.connect.PropertyLoader;
-import com.qf58.bd.kylin.dto.QueryFiled;
-import com.qf58.bd.kylin.dto.SelectField;
-import com.qf58.bd.kylin.dto.TimeField;
-import com.qf58.bd.kylin.entities.KylinQueryBaseResult;
-import com.qf58.bd.kylin.enums.QueryTimeTypeEnum;
-import com.qf58.bd.kylin.template.KylinBuildCubeTemplate;
+import com.tong.bd.kylin.connect.KylinConnPool;
+import com.tong.bd.kylin.connect.PropertyLoader;
+import com.tong.bd.kylin.dto.QueryFiled;
+import com.tong.bd.kylin.dto.SelectField;
+import com.tong.bd.kylin.dto.TimeField;
+import com.tong.bd.kylin.entities.KylinQueryBaseResult;
+import com.tong.bd.kylin.enums.QueryTimeTypeEnum;
+import com.tong.bd.kylin.template.KylinBuildCubeTemplate;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

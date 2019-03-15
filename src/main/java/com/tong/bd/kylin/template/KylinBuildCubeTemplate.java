@@ -1,11 +1,11 @@
-package com.qf58.bd.kylin.template;
+package com.tong.bd.kylin.template;
 
-import com.qf58.bd.kylin.connect.KylinHelper;
-import com.qf58.bd.kylin.dto.QueryFiled;
-import com.qf58.bd.kylin.dto.SelectField;
-import com.qf58.bd.kylin.dto.TimeField;
-import com.qf58.bd.kylin.entities.KylinQueryBaseResult;
-import com.qf58.bd.kylin.enums.QueryTimeTypeEnum;
+import com.tong.bd.kylin.connect.KylinHelper;
+import com.tong.bd.kylin.dto.QueryFiled;
+import com.tong.bd.kylin.dto.SelectField;
+import com.tong.bd.kylin.dto.TimeField;
+import com.tong.bd.kylin.entities.KylinQueryBaseResult;
+import com.tong.bd.kylin.enums.QueryTimeTypeEnum;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

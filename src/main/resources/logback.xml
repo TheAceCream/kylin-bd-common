@@ -93,7 +93,7 @@
 
 
 
-    <logger name="com.qf58.bd" level="${qifuLevel}" additivity="true">
+    <logger name="com.tong.bd" level="${qifuLevel}" additivity="true">
         <appender-ref ref="dubboAsyncErrorAppender"/>
     </logger>
     <logger name="org.mybatis.spring" level="${mybatisLevel}" additivity="true"/>

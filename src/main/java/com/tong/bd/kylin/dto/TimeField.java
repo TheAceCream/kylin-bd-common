@@ -1,6 +1,6 @@
-package com.qf58.bd.kylin.dto;
+package com.tong.bd.kylin.dto;
 
-import com.qf58.bd.kylin.enums.QueryTimeTypeEnum;
+import com.tong.bd.kylin.enums.QueryTimeTypeEnum;
 
 import java.io.Serializable;
 

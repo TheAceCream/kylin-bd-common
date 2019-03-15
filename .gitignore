@@ -7,5 +7,5 @@
 *.iml
 out
 gen
-src/main/java/com/qf58/bd/kylin/pub/
+src/main/java/com/tong/bd/kylin/pub/
 target/

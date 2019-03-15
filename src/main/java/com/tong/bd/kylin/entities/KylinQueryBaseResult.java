@@ -1,4 +1,4 @@
-package com.qf58.bd.kylin.entities;
+package com.tong.bd.kylin.entities;
 
 import java.io.Serializable;
 import java.util.List;
